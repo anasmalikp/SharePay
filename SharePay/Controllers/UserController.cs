@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SharePay.Interfaces;
-using SharePay.Models;
+using SharePay.Models;  
 
 namespace SharePay.Controllers
 {
@@ -27,6 +27,17 @@ namespace SharePay.Controllers
             {
                 return BadRequest(result);
             }
+        }
+
+        [HttpPost("userlogin")]
+        public async Task<IActionResult> LoginUser(Users user)
+        {
+            var result = await services.Login(user);
+            if(result.success)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
         }
     }
 }
