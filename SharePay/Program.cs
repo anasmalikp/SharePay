@@ -4,6 +4,7 @@ using Microsoft.IdentityModel.Tokens;
 using SharePay.Interfaces;
 using SharePay.Middlewares;
 using SharePay.Models;
+using SharePay.Models.Mapper;
 using SharePay.Services;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -16,8 +17,10 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<IUserServices, UserServices>();
+builder.Services.AddScoped<IExpenseService, ExpenseService>();
 builder.Services.AddScoped<GetUserId>();
 builder.Services.AddScoped<UserCreds>();
+builder.Services.AddAutoMapper(typeof(MapperClass));
 
 builder.Services.AddAuthentication(o =>
 {

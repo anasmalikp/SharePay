@@ -15,13 +15,14 @@ namespace SharePay.Middlewares
 
         public async Task InvokeAsync(HttpContext context, RequestDelegate next)
         {
-            if (context.Request.Path.StartsWithSegments("/api/User") && context.Request.Method.ToUpperInvariant() == "POST")
+            if (context.Request.Path.StartsWithSegments("/api/User") && string.Equals(context.Request.Method, "POST"))
             {
                 await next(context);
+                return;
             }
 
             string bearerToken = context.Request.Headers["Authorization"];
-            if(!string.IsNullOrWhiteSpace(bearerToken) || !bearerToken.StartsWith("Bearer"))
+            if(string.IsNullOrWhiteSpace(bearerToken) || !bearerToken.StartsWith("Bearer"))
             {
                 context.Response.StatusCode = 401;
                 await context.Response.WriteAsync("Invalid Header Format");
@@ -33,6 +34,7 @@ namespace SharePay.Middlewares
             creds.UserId = userId;
 
             await next(context);
+            return;
         }
     }
 }

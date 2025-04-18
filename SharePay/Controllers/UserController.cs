@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using SharePay.Interfaces;
 using SharePay.Models;  
@@ -38,6 +39,34 @@ namespace SharePay.Controllers
                 return Ok(result);
             }
             return BadRequest(result);
+        }
+
+        [HttpGet("getallusers")]
+        [Authorize]
+        public async Task<IActionResult> GetAllUsers()
+        {
+            var result = await services.GetAllUsers();
+            if (result.success)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
+
+        [HttpGet("searchuser")]
+        [Authorize]
+        public async Task<IActionResult> SearchUser(string prompt)
+        {
+            if (!string.IsNullOrEmpty(prompt))
+            {
+                var result = await services.SearchUser(prompt);
+                if (result.success)
+                {
+                    return Ok(result);
+                }
+                return BadRequest(result);
+            }
+            return BadRequest("Invalid Input");
         }
     }
 }

@@ -3,6 +3,7 @@ using Microsoft.IdentityModel.Tokens;
 using MySql.Data.MySqlClient;
 using SharePay.Interfaces;
 using SharePay.Models;
+using SharePay.Models.ViewModels;
 using SharePay.Security;
 using System.Data;
 using System.IdentityModel.Tokens.Jwt;
@@ -16,11 +17,13 @@ namespace SharePay.Services
         private readonly IDbConnection connection;
         private readonly ILogger<UserServices> logger;
         private readonly IConfiguration config;
-        public UserServices(IConfiguration config, ILogger<UserServices> logger)
+        private readonly UserCreds creds;
+        public UserServices(IConfiguration config, ILogger<UserServices> logger, UserCreds creds)
         {
             connection = new MySqlConnection(config.GetConnectionString("DefaultConnection"));
             this.logger = logger;
             this.config = config;
+            this.creds = creds;
         }
 
         public async Task<ApiResponse<bool>> RegisterUser(Users user)
@@ -117,6 +120,68 @@ namespace SharePay.Services
                     message = "fatal error occured",
                     status = 500,
                     data = new { token = string.Empty }
+                };
+            }
+        }
+
+        public async Task<ApiResponse<List<UsersVM>>> GetAllUsers()
+        {
+            try
+            {
+                var users = await connection.QueryAsync<UsersVM>("SELECT id, username, email FROM users WHERE id != @id", new { id = creds.UserId });
+                return new ApiResponse<List<UsersVM>>
+                {
+                    success = true,
+                    status = 200,
+                    message = "List of All Users",
+                    data = users.ToList()
+                };
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex.Message);
+                return new ApiResponse<List<UsersVM>>
+                {
+                    success = false,
+                    message = "Internal Server Error",
+                    data = new List<UsersVM>(),
+                    status = 500
+                };
+            }
+        }
+
+        public async Task<ApiResponse<UsersVM>> SearchUser(string searchPromt)
+        {
+            try
+            {
+                var user = await connection.QueryFirstAsync<UsersVM>("SELECT id, username, email FROM users WHERE username LIKE @search OR email LIKE @search", new { search = "%" + searchPromt + "%" });
+                if(user == null)
+                {
+                    return new ApiResponse<UsersVM>
+                    {
+                        success = true,
+                        status = 401,
+                        message = "User not found!",
+                        data = new UsersVM()
+                    };
+                }
+                return new ApiResponse<UsersVM>
+                {
+                    status = 200,
+                    data = user,
+                    message = "User Found",
+                    success = true
+                };
+            }
+            catch(Exception ex)
+            {
+                logger.LogError(ex.Message);
+                return new ApiResponse<UsersVM>
+                {
+                    success = false,
+                    message = "Internal Server Error",
+                    status = 500,
+                    data = new UsersVM()
                 };
             }
         }
