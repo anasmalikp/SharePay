@@ -176,7 +176,7 @@ namespace SharePay.Services
         {
             try
             {
-                var userExp = await connection.QueryAsync("SELECT u.paidAmt as paidAmt, u.userAmount as userAmount, e.id as id, e.name as name, e.Note as Note, s.username as paidByName FROM userexpenses as u INNER JOIN expenses as e on u.expId = e.id INNER JOIN users as s ON e.paidBy = s.id WHERE u.userId = @userId AND u.paidAmt != u.userAmount", new { userId = creds.UserId });
+                var userExp = await connection.QueryAsync("SELECT u.paidAmt as paidAmt, u.userAmount as userAmount, e.id as id, e.name as name, e.Note as Note, s.username as paidByName FROM userexpenses as u INNER JOIN expenses as e on u.expId = e.id INNER JOIN users as s ON e.paidBy = s.id WHERE u.userId = @userId AND e.isSettled = 0", new { userId = creds.UserId });
                 if (!userExp.Any())
                 {
                     return new ApiResponse<IEnumerable<Expenses>>
