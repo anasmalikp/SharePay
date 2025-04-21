@@ -7,7 +7,8 @@ namespace SharePay.Models.Mapper
     {
         public MapperClass()
         {
-            CreateMap<Users, UsersVM>().ReverseMap();   
+            CreateMap<Users, UsersVM>().ReverseMap();
+            CreateMap<Expenses, ExpenseVM>().ReverseMap();
         }
     }
 }

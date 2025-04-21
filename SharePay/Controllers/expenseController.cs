@@ -30,5 +30,29 @@ namespace SharePay.Controllers
             }
             return BadRequest("No Body Found");
         }
+
+        [HttpGet("getuserpaidexp")]
+        [Authorize]
+        public async Task<IActionResult> GetUserPaidExp()
+        {
+            var result = await service.GetUserPaidExpenses();
+            if (result.success)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
+
+        [HttpGet("getexpdetails")]
+        [Authorize]
+        public async Task<IActionResult> GetExpDetails(int expId)
+        {
+            var result = await service.GetExpenseDetails(expId);
+            if (result.success)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
     }
 }
