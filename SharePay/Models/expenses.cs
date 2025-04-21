@@ -8,5 +8,6 @@
         public bool? isSettled { get; set; }
         public int? amount { get; set; }
         public int? paidBy { get; set; }
+        public string? paidByName { get; set; }
     }
 }

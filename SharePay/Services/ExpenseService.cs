@@ -171,5 +171,101 @@ namespace SharePay.Services
                 };
             }
         }
+
+        public async Task<ApiResponse<IEnumerable<Expenses>>> GetAllPayableExpenses()
+        {
+            try
+            {
+                var userExp = await connection.QueryAsync("SELECT u.paidAmt as paidAmt, u.userAmount as userAmount, e.id as id, e.name as name, e.Note as Note, s.username as paidByName FROM userexpenses as u INNER JOIN expenses as e on u.expId = e.id INNER JOIN users as s ON e.paidBy = s.id WHERE u.userId = @userId AND u.paidAmt != u.userAmount", new { userId = creds.UserId });
+                if (!userExp.Any())
+                {
+                    return new ApiResponse<IEnumerable<Expenses>>
+                    {
+                        data = new List<Expenses>(),
+                        message = "No Data Found!",
+                        status = 401,
+                        success = false
+                    };
+                }
+
+                List<Expenses> expenses = new List<Expenses>();
+
+                foreach (var expense in userExp)
+                {
+                    Expenses ex = new Expenses
+                    {
+                        amount = expense.userAmount - expense.paidAmt,
+                        isSettled = expense.isSettled,
+                        name = expense.name,
+                        id = expense.id,
+                        paidByName = expense.paidByName,
+                        Note = expense.Note
+                    };
+                    expenses.Add(ex);
+                }
+
+                return new ApiResponse<IEnumerable<Expenses>>
+                {
+                    data = expenses,
+                    status = 200,
+                    success = true,
+                    message = "List of Payable Expenses",
+                };
+
+            }
+            catch(Exception ex)
+            {
+                logger.LogError(ex.Message);
+                return new ApiResponse<IEnumerable<Expenses>>
+                {
+                    data = new List<Expenses>(),
+                    message = "Internal Server Error",
+                    status = 500,
+                    success = false
+                };
+            }
+        }
+
+        public async Task<ApiResponse<bool>> ExpPayment(int amount, int expId)
+        {
+            try
+            {
+                var isPaid = await connection.ExecuteAsync("UPDATE userexpenses SET paidAmt = @paidAmt WHERE expId = @expId AND userId = @userId", new { paidAmt = amount, expId = expId, userId = creds.UserId });
+                if(isPaid < 1)
+                {
+                    return new ApiResponse<bool>
+                    {
+                        data = false,
+                        message = "Failed to mark the payments!",
+                        status = 400,
+                        success = false
+                    };
+                }
+                var isSettled = await connection.QueryAsync<int>("SELECT id FROM userexpenses WHERE expId = @expId AND paidAmt != userAmount", new { expId = expId });
+                if (!isSettled.Any())
+                {
+                    await connection.ExecuteAsync("UPDATE expenses SET isSettled = @isSettled WHERE expId = @expId", new { isSettled = true, expId = @expId });
+                }
+
+                return new ApiResponse<bool>
+                {
+                    data = true,
+                    message = "Payment Recorded",
+                    status = 201,
+                    success = true
+                };
+            }
+            catch(Exception ex)
+            {
+                logger.LogError(ex.Message);
+                return new ApiResponse<bool>
+                {
+                    data = false,
+                    message = "Internal Server Error",
+                    status = 500,
+                    success = false
+                };
+            }
+        }
     }
 }

@@ -54,5 +54,34 @@ namespace SharePay.Controllers
             }
             return BadRequest(result);
         }
+
+        [HttpGet("getallpayables")]
+        [Authorize]
+        public async Task<IActionResult> GetPayables()
+        {
+            var response = await service.GetAllPayableExpenses();
+            if (response.success)
+            {
+                return Ok(response);
+            }
+            return BadRequest(response);
+        }
+
+        [HttpPost("postpayment")]
+        [Authorize]
+        public async Task<IActionResult> PostPayment(int amount, int expId)
+        {
+            if(amount <= 0 ||  expId <= 0)
+            {
+                return BadRequest("Invalid Inputs");
+            }
+
+            var result = await service.ExpPayment(amount, expId);
+            if (result.success)
+            {
+                return Ok(result);
+            }
+            return BadRequest(result);
+        }
     }
 }
