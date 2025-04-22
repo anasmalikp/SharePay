@@ -8,6 +8,6 @@ namespace SharePay.Interfaces
         Task<ApiResponse<bool>> RegisterUser(Users user);
         Task<ApiResponse<object>> Login(Users user);
         Task<ApiResponse<List<UsersVM>>> GetAllUsers();
-        Task<ApiResponse<UsersVM>> SearchUser(string searchPromt);
+        Task<ApiResponse<IEnumerable<UsersVM>>> SearchUser(string searchPromt);
     }
 }

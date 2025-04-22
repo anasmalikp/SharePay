@@ -150,22 +150,22 @@ namespace SharePay.Services
             }
         }
 
-        public async Task<ApiResponse<UsersVM>> SearchUser(string searchPromt)
+        public async Task<ApiResponse<IEnumerable<UsersVM>>> SearchUser(string searchPromt)
         {
             try
             {
-                var user = await connection.QueryFirstAsync<UsersVM>("SELECT id, username, email FROM users WHERE username LIKE @search OR email LIKE @search", new { search = "%" + searchPromt + "%" });
+                var user = await connection.QueryAsync<UsersVM>("SELECT id, username, email FROM users WHERE username LIKE @search OR email LIKE @search", new { search = "%" + searchPromt + "%" });
                 if(user == null)
                 {
-                    return new ApiResponse<UsersVM>
+                    return new ApiResponse<IEnumerable<UsersVM>>
                     {
                         success = true,
                         status = 401,
                         message = "User not found!",
-                        data = new UsersVM()
+                        data = new List<UsersVM>()
                     };
                 }
-                return new ApiResponse<UsersVM>
+                return new ApiResponse<IEnumerable<UsersVM>>
                 {
                     status = 200,
                     data = user,
@@ -176,12 +176,12 @@ namespace SharePay.Services
             catch(Exception ex)
             {
                 logger.LogError(ex.Message);
-                return new ApiResponse<UsersVM>
+                return new ApiResponse<IEnumerable<UsersVM>>
                 {
                     success = false,
                     message = "Internal Server Error",
                     status = 500,
-                    data = new UsersVM()
+                    data = new List<UsersVM>()
                 };
             }
         }
